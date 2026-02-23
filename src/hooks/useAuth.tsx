@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+// Super admin email — this user is always granted admin access automatically
+const SUPER_ADMIN_EMAIL = "jiveshpatil0@gmail.com";
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -33,8 +36,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    const safeSetAdmin = async (userId: string) => {
+    const ensureSuperAdmin = async (userId: string, email: string | undefined) => {
+      if (!email || email.toLowerCase() !== SUPER_ADMIN_EMAIL) return;
+      // Try to set admin role in DB (may fail silently due to RLS, that's OK)
       try {
+        const { data: existing } = await supabase
+          .from("user_roles")
+          .select("id, role")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (existing?.role === "admin") return;
+        if (existing) {
+          await supabase.from("user_roles").update({ role: "admin" }).eq("id", existing.id);
+        } else {
+          await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+        }
+      } catch {
+        // RLS may block this — that's fine, we handle it in safeSetAdmin
+      }
+    };
+
+    const safeSetAdmin = async (userId: string, email?: string) => {
+      try {
+        // Super admin email always gets admin access, regardless of DB state
+        if (email && email.toLowerCase() === SUPER_ADMIN_EMAIL) {
+          // Still try to sync DB in background
+          ensureSuperAdmin(userId, email).catch(() => { });
+          if (isMounted) setIsAdmin(true);
+          return;
+        }
+
+        // For all other users, check the database
+        await ensureSuperAdmin(userId, email);
         const { data } = await supabase
           .from("user_roles")
           .select("role")
@@ -58,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (nextSession?.user) {
         // Avoid awaiting inside the callback
-        setTimeout(() => void safeSetAdmin(nextSession.user.id), 0);
+        setTimeout(() => void safeSetAdmin(nextSession.user.id, nextSession.user.email), 0);
       } else {
         setIsAdmin(false);
       }
@@ -77,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(initialSession?.user ?? null);
 
         if (initialSession?.user) {
-          await safeSetAdmin(initialSession.user.id);
+          await safeSetAdmin(initialSession.user.id, initialSession.user.email);
         } else {
           setIsAdmin(false);
         }

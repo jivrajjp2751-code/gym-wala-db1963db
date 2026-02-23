@@ -39,6 +39,8 @@ interface UserWithRole {
   role_id: string;
 }
 
+const SUPER_ADMIN_EMAIL = "jiveshpatil0@gmail.com";
+
 const AdminDashboard = () => {
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -55,6 +57,10 @@ const AdminDashboard = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Check if user is super admin by email (fallback if DB role check fails)
+  const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
+  const hasAdminAccess = isAdmin || isSuperAdmin;
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
@@ -62,12 +68,12 @@ const AdminDashboard = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (hasAdminAccess) {
       fetchContacts();
       fetchBookings();
       fetchUsers();
     }
-  }, [isAdmin]);
+  }, [hasAdminAccess]);
 
   const fetchContacts = async () => {
     const { data } = await supabase
@@ -172,7 +178,7 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (!hasAdminAccess) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -256,8 +262,8 @@ const AdminDashboard = () => {
                   key={t.key}
                   onClick={() => setTab(t.key)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab === t.key
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/50"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50"
                     }`}
                 >
                   <t.icon className="w-4 h-4" />

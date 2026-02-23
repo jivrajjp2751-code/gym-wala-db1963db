@@ -8,21 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { LogIn, Eye, EyeOff } from "lucide-react";
+import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
+  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "reset">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [forgotMode, setForgotMode] = useState(false);
-  const [resetMode, setResetMode] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   // If the user lands here from a reset email, the auth client may process the URL
@@ -35,8 +35,8 @@ const Auth = () => {
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
       const type = hashParams.get("type") ?? url.searchParams.get("type");
-      const mode = url.searchParams.get("mode");
-      const isRecovery = type === "recovery" || mode === "recovery";
+      const urlMode = url.searchParams.get("mode");
+      const isRecovery = type === "recovery" || urlMode === "recovery";
 
       // PKCE flow: exchange code for session if present
       const code = url.searchParams.get("code");
@@ -51,8 +51,7 @@ const Auth = () => {
       }
 
       if (isRecovery) {
-        setResetMode(true);
-        setForgotMode(false);
+        setMode("reset");
         setError("");
         setSuccess("");
       }
@@ -64,8 +63,7 @@ const Auth = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
-        setResetMode(true);
-        setForgotMode(false);
+        setMode("reset");
         setError("");
         setSuccess("");
       }
@@ -77,10 +75,19 @@ const Auth = () => {
     };
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const clearMessages = () => {
     setError("");
     setSuccess("");
+  };
+
+  const switchMode = (newMode: "login" | "signup" | "forgot") => {
+    setMode(newMode);
+    clearMessages();
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearMessages();
     setLoading(true);
 
     const { error } = await signIn(email, password);
@@ -97,10 +104,35 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearMessages();
+
+    if (!name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await signUp(email, password, name.trim());
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess("Account created successfully! You can now sign in.");
+      setMode("login");
+      setName("");
+      setPassword("");
+    }
+    setLoading(false);
+  };
+
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    clearMessages();
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -116,8 +148,7 @@ const Auth = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    clearMessages();
 
     if (newPassword.length < 6) {
       setError("Password must be at least 6 characters.");
@@ -138,11 +169,24 @@ const Auth = () => {
       window.history.replaceState({}, document.title, `${window.location.origin}/auth`);
 
       setSuccess("Password updated successfully! Please sign in with your new password.");
-      setResetMode(false);
+      setMode("login");
       setNewPassword("");
       setConfirmPassword("");
     }
     setLoading(false);
+  };
+
+  const getTitle = () => {
+    switch (mode) {
+      case "signup": return "Create Account";
+      case "forgot": return "Reset Password";
+      case "reset": return "Set New Password";
+      default: return "Sign In";
+    }
+  };
+
+  const getIcon = () => {
+    return mode === "signup" ? <UserPlus className="w-6 h-6 text-primary" /> : <LogIn className="w-6 h-6 text-primary" />;
   };
 
   return (
@@ -155,13 +199,12 @@ const Auth = () => {
           className="glass rounded-lg p-8 w-full max-w-md"
         >
           <div className="flex items-center gap-3 mb-6">
-            <LogIn className="w-6 h-6 text-primary" />
-            <h1 className="font-display text-3xl text-foreground">
-              {resetMode ? "Set New Password" : forgotMode ? "Reset Password" : "Admin Login"}
-            </h1>
+            {getIcon()}
+            <h1 className="font-display text-3xl text-foreground">{getTitle()}</h1>
           </div>
 
-          {resetMode ? (
+          {/* ─── Password Reset Form ─── */}
+          {mode === "reset" && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <p className="text-sm text-muted-foreground">Enter your new password below.</p>
               <div className="relative">
@@ -197,7 +240,10 @@ const Auth = () => {
                 {loading ? "Updating..." : "Update Password"}
               </Button>
             </form>
-          ) : forgotMode ? (
+          )}
+
+          {/* ─── Forgot Password Form ─── */}
+          {mode === "forgot" && (
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <p className="text-sm text-muted-foreground">Enter your email and we'll send you a reset link.</p>
               <Input
@@ -216,15 +262,76 @@ const Auth = () => {
               <p className="text-center text-sm text-muted-foreground">
                 <button
                   type="button"
-                  onClick={() => { setForgotMode(false); setError(""); setSuccess(""); }}
+                  onClick={() => switchMode("login")}
                   className="text-primary hover:underline"
                 >
                   Back to Login
                 </button>
               </p>
             </form>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+          )}
+
+          {/* ─── Sign Up Form ─── */}
+          {mode === "signup" && (
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <Input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+                required
+              />
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+                required
+              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password (min 6 characters)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-card border-border text-foreground placeholder:text-muted-foreground pr-10"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {error && <p className="text-destructive text-sm">{error}</p>}
+              {success && <p className="text-primary text-sm">{success}</p>}
+
+              <Button variant="hero" size="lg" type="submit" className="w-full" disabled={loading}>
+                {loading ? "Creating Account..." : "Sign Up"}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode("login")}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Sign In
+                </button>
+              </p>
+            </form>
+          )}
+
+          {/* ─── Login Form ─── */}
+          {mode === "login" && (
+            <form onSubmit={handleLogin} className="space-y-4">
               <Input
                 type="email"
                 placeholder="Email"
@@ -265,7 +372,7 @@ const Auth = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => { setForgotMode(true); setError(""); setSuccess(""); }}
+                  onClick={() => switchMode("forgot")}
                   className="text-sm text-primary hover:underline"
                 >
                   Forgot password?
@@ -273,10 +380,22 @@ const Auth = () => {
               </div>
 
               {error && <p className="text-destructive text-sm">{error}</p>}
+              {success && <p className="text-primary text-sm">{success}</p>}
 
               <Button variant="hero" size="lg" type="submit" className="w-full" disabled={loading}>
                 {loading ? "Please wait..." : "Sign In"}
               </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode("signup")}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Sign Up
+                </button>
+              </p>
             </form>
           )}
         </motion.div>
