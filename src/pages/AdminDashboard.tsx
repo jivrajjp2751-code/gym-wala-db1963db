@@ -5,9 +5,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Shield, Users, CalendarCheck, MessageSquare, Trash2, Search, LogOut, KeyRound } from "lucide-react";
+
 
 interface ContactSubmission {
   id: string;
@@ -56,6 +68,10 @@ const AdminDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [deleteUserLoadingId, setDeleteUserLoadingId] = useState<string | null>(null);
+  const [deleteUserMessage, setDeleteUserMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
 
   // Check if user is super admin by email (fallback if DB role check fails)
   const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
@@ -172,9 +188,30 @@ const AdminDashboard = () => {
     }
 
     setGrantMessage({ type: "success", text: `Admin access granted to ${trimmedEmail}` });
+    setDeleteUserMessage(null);
     setGrantEmail("");
     setGrantLoading(false);
     fetchUsers();
+  };
+
+  const deleteUserAccount = async (userId: string, email: string | null) => {
+    if (!isSuperAdmin) return;
+
+    setDeleteUserLoadingId(userId);
+    setDeleteUserMessage(null);
+
+    const { error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { userId },
+    });
+
+    if (error) {
+      setDeleteUserMessage({ type: "error", text: error.message });
+    } else {
+      setDeleteUserMessage({ type: "success", text: `Deleted user ${email ?? userId}` });
+      fetchUsers();
+    }
+
+    setDeleteUserLoadingId(null);
   };
 
   if (authLoading) {
@@ -357,20 +394,24 @@ const AdminDashboard = () => {
                       type="email"
                       placeholder="Enter user email..."
                       value={grantEmail}
-                      onChange={(e) => { setGrantEmail(e.target.value); setGrantMessage(null); }}
+                      onChange={(e) => {
+                        setGrantEmail(e.target.value);
+                        setGrantMessage(null);
+                      }}
                       className="bg-card border-border text-foreground placeholder:text-muted-foreground flex-1"
                     />
-                    <Button
-                      variant="default"
-                      onClick={grantAdminAccess}
-                      disabled={grantLoading || !grantEmail.trim()}
-                    >
+                    <Button variant="default" onClick={grantAdminAccess} disabled={grantLoading || !grantEmail.trim()}>
                       {grantLoading ? "Granting..." : "Grant Access"}
                     </Button>
                   </div>
                   {grantMessage && (
                     <p className={`text-sm mt-2 ${grantMessage.type === "success" ? "text-primary" : "text-destructive"}`}>
                       {grantMessage.text}
+                    </p>
+                  )}
+                  {deleteUserMessage && (
+                    <p className={`text-sm mt-2 ${deleteUserMessage.type === "success" ? "text-primary" : "text-destructive"}`}>
+                      {deleteUserMessage.text}
                     </p>
                   )}
                 </div>
@@ -385,17 +426,45 @@ const AdminDashboard = () => {
                         <span className="text-xs text-muted-foreground ml-3">{u.email}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className={`text-xs px-2 py-1 rounded font-medium ${u.role === "admin" ? "bg-accent/20 text-accent" : "bg-secondary text-secondary-foreground"
-                          }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded font-medium ${
+                            u.role === "admin" ? "bg-accent/20 text-accent" : "bg-secondary text-secondary-foreground"
+                          }`}
+                        >
                           {u.role}
                         </span>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => toggleRole(u.user_id, u.role, u.role_id)}
-                        >
+
+                        <Button variant="secondary" size="sm" onClick={() => toggleRole(u.user_id, u.role, u.role_id)}>
                           {u.role === "admin" ? "Remove Admin" : "Make Admin"}
                         </Button>
+
+                        {isSuperAdmin && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label={`Delete user ${u.email ?? u.user_id}`}>
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete user account?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete the user’s login and remove their profile/role data.
+                                  This cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteUserAccount(u.user_id, u.email)}
+                                  disabled={deleteUserLoadingId === u.user_id}
+                                >
+                                  {deleteUserLoadingId === u.user_id ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </div>
                   ))}
