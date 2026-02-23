@@ -122,7 +122,14 @@ const AdminDashboard = () => {
 
   const toggleRole = async (userId: string, currentRole: string, roleId: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
-    await supabase.from("user_roles").update({ role: newRole }).eq("id", roleId);
+
+    // If there's no role row yet, create one; otherwise update the existing row.
+    if (!roleId) {
+      await supabase.from("user_roles").insert({ user_id: userId, role: newRole });
+    } else {
+      await supabase.from("user_roles").update({ role: newRole }).eq("id", roleId);
+    }
+
     fetchUsers();
   };
 
