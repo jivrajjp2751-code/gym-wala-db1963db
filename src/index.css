@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 12%;
+
+    /* Bright white + gold */
+    --primary: 45 96% 45%;
+    --primary-foreground: 222 25% 12%;
+
+    --secondary: 45 45% 94%;
+    --secondary-foreground: 222 25% 12%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 222 10% 40%;
+
+    --accent: 45 100% 50%;
+    --accent-foreground: 222 25% 12%;
+
+    --destructive: 0 84% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 45 25% 88%;
+    --input: 45 25% 88%;
+    --ring: 45 96% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 25% 12%;
+    --sidebar-primary: 45 96% 45%;
+    --sidebar-primary-foreground: 222 25% 12%;
+    --sidebar-accent: 45 45% 94%;
+    --sidebar-accent-foreground: 222 25% 12%;
+    --sidebar-border: 45 25% 88%;
+    --sidebar-ring: 45 96% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 18px hsl(45 100% 50% / 0.35), 0 0 40px hsl(45 96% 45% / 0.25);
+  }
+
+  .neon-border {
+    box-shadow: 0 0 14px hsl(45 100% 50% / 0.25), inset 0 0 14px hsl(45 96% 45% / 0.12);
+  }
+
+  .glass {
+    @apply bg-card/85 backdrop-blur-sm border border-border/60;
+  }
+
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
