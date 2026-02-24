@@ -3,6 +3,7 @@ import { Waves, Clock, Shield, Users, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 import poolBg from "@/assets/pool-bg.jpg";
 
 const features = [
@@ -21,6 +22,11 @@ const ageCategories = [
 
 const SwimmingPool = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Swimming Pool - Coaching & Sessions"
+      description="Enjoy our Olympic-standard swimming pool with certified coaching. Sessions available for kids, ladies, and adults. UV-treated hygienic water."
+      keywords="Swimming Pool, Swimming Coaching, Vikram Jadhav, Ladies Only Swimming, Kids Swimming"
+    />
     <Navbar />
 
     {/* Hero */}

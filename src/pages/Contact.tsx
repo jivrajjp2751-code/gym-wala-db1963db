@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
@@ -33,6 +34,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Contact Us - Location & Enquiries"
+        description="Get in touch with Vikram Jadhav's premium sports destination. Find our location in Chhatrapati Sambhajinagar or send us an enquiry for turf and pool bookings."
+        keywords="Contact Vikram Jadhav, Sports Turf Location, Swimming Pool Aurangabad, Fitness Enquiry"
+      />
       <Navbar />
       <section className="pt-24 section-padding">
         <div className="container mx-auto max-w-5xl">

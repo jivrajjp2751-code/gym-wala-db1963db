@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 import turfBg from "@/assets/turf-bg.jpg";
 import poolBg from "@/assets/pool-bg.jpg";
 import cafeBg from "@/assets/cafe-bg.jpg";
@@ -27,6 +28,11 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Gallery - Look Inside our Facilities"
+        description="See pictures of our premium sports turf, world-class swimming pool, and fitness café. Take a virtual tour of the ultimate sports destination."
+        keywords="Sports Facility Gallery, Turf Photos, Swimming Pool Photos, Vikram Jadhav Images"
+      />
       <Navbar />
 
       <section className="pt-24 section-padding">
@@ -45,11 +51,10 @@ const Gallery = () => {
               <button
                 key={c}
                 onClick={() => setFilter(c)}
-                className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-                  filter === c
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${filter === c
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:border-primary/50"
-                }`}
+                  }`}
               >
                 {c}
               </button>

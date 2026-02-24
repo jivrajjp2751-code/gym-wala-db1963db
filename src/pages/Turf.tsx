@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 import turfBg from "@/assets/turf-bg.jpg";
 import { format, addDays, isSameDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,11 @@ const Turf = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Book Sports Turf - Football & Cricket"
+        description="Book premium sports turf for Football, Cricket, Badminton and Tennis. Competitive rates and top-quality facilities at Vikram Jadhav's premium destination."
+        keywords="Turf Booking, Football Turf, Box Cricket, Vikram Jadhav, Sports Facility"
+      />
       <Navbar />
 
       <section className="relative h-[50vh] flex items-center justify-center">
@@ -98,14 +104,13 @@ const Turf = () => {
             <h3 className="font-display text-2xl text-foreground mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary" /> Select Date
             </h3>
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
               {days.map((d) => (
                 <button
                   key={d.toISOString()}
                   onClick={() => { setSelectedDate(d); setSelectedSlot(null); }}
-                  className={`flex flex-col items-center px-4 py-3 rounded-lg border transition-all min-w-[70px] ${
-                    isSameDay(d, selectedDate) ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                  }`}
+                  className={`flex flex-col items-center px-4 py-3 rounded-lg border transition-all min-w-[70px] ${isSameDay(d, selectedDate) ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                    }`}
                 >
                   <span className="text-xs font-medium">{format(d, "EEE")}</span>
                   <span className="text-lg font-semibold">{format(d, "dd")}</span>
@@ -129,13 +134,12 @@ const Turf = () => {
                     key={slot}
                     disabled={isBooked}
                     onClick={() => setSelectedSlot(slot)}
-                    className={`py-3 px-2 rounded-lg text-sm font-medium border transition-all ${
-                      isBooked
-                        ? "border-border bg-muted text-muted-foreground opacity-50 cursor-not-allowed line-through"
-                        : isSelected
+                    className={`py-3 px-2 rounded-lg text-sm font-medium border transition-all ${isBooked
+                      ? "border-border bg-muted text-muted-foreground opacity-50 cursor-not-allowed line-through"
+                      : isSelected
                         ? "border-primary bg-primary/20 text-primary neon-border"
                         : "border-border bg-card text-foreground hover:border-primary/50"
-                    }`}
+                      }`}
                   >
                     {slot}
                   </button>
