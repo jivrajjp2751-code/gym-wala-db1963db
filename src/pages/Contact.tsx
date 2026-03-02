@@ -64,7 +64,7 @@ const Contact = () => {
                   <Phone className="w-6 h-6 text-primary shrink-0 mt-1" />
                   <div>
                     <h3 className="font-display text-xl text-foreground mb-1">Phone</h3>
-                    <p className="text-sm text-muted-foreground">+91 70208 18586</p>
+                    <p className="text-sm text-muted-foreground">+91 91563 85338</p>
                   </div>
                 </div>
               </motion.div>
@@ -74,7 +74,7 @@ const Contact = () => {
                   <Mail className="w-6 h-6 text-primary shrink-0 mt-1" />
                   <div>
                     <h3 className="font-display text-xl text-foreground mb-1">Email</h3>
-                    <p className="text-sm text-muted-foreground">info@vjarmy.com</p>
+                    <p className="text-sm text-muted-foreground">vjsportsclubofficial@gmail.com</p>
                   </div>
                 </div>
               </motion.div>

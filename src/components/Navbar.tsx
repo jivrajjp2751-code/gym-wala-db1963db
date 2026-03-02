@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Instagram } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import InstagramMenu from "@/components/InstagramMenu";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
@@ -47,13 +48,7 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <button
-            onClick={() => { const w = window.top || window; w.open("https://www.instagram.com/vikram_official", "_blank", "noopener,noreferrer"); }}
-            className="text-muted-foreground hover:text-primary transition-colors"
-            aria-label="Instagram"
-          >
-            <Instagram className="w-5 h-5" />
-          </button>
+          <InstagramMenu />
           <button
             onClick={() => { const w = window.top || window; w.open("https://wa.me/917020818586", "_blank", "noopener,noreferrer"); }}
             className="text-muted-foreground hover:text-primary transition-colors"

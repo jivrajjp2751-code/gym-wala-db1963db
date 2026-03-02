@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Flag, Dumbbell, Users, Instagram, ChevronDown, Star, Award } from "lucide-react";
+import { Trophy, Flag, Dumbbell, Users, ChevronDown, Star, Award } from "lucide-react";
+import InstagramMenu from "@/components/InstagramMenu";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -65,7 +66,7 @@ const Index = () => {
                 <motion.span animate={{ textShadow: ["0 0 20px hsl(var(--primary) / 0.3)", "0 0 40px hsl(var(--primary) / 0.6)", "0 0 20px hsl(var(--primary) / 0.3)"] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}>Vikram Jadhav</motion.span>
               </motion.h1>
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }} className="font-display text-2xl sm:text-3xl text-foreground mb-2">
-                Play. Swim. Fuel Your Fitness.
+                Your Health, Our Mission.
               </motion.p>
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.25 }} className="text-lg text-muted-foreground mb-6">
                 A premium sports destination led by Mr. India 2019.
@@ -97,12 +98,7 @@ const Index = () => {
               </motion.div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-6 flex flex-wrap gap-4">
-                <button
-                  onClick={() => { const w = window.top || window; w.open("https://www.instagram.com/vikram_official", "_blank", "noopener,noreferrer"); }}
-                  className="inline-flex items-center gap-2 text-foreground hover:text-primary transition-colors text-sm"
-                >
-                  <Instagram className="w-5 h-5" /> @vikram_official
-                </button>
+                <InstagramMenu showLabels />
                 <button
                   onClick={() => { const w = window.top || window; w.open("https://wa.me/917020818586", "_blank", "noopener,noreferrer"); }}
                   className="inline-flex items-center gap-2 text-foreground hover:text-primary transition-colors text-sm"
